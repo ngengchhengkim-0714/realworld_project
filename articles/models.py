@@ -1,12 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-
-class User(AbstractUser):
-  bio = models.TextField(blank=True, null=True)
-  image = models.URLField(blank=True, null=True)
-
-class Tag(models.Model):
-  name = models.CharField(max_length=50, unique=True)
+from django.contrib.auth.models import User
+from tags.models import Tag
+from django.conf import settings
+from django.utils.text import slugify
 
 class Article(models.Model):
   slug = models.SlugField(unique=True)
@@ -15,5 +11,10 @@ class Article(models.Model):
   body = models.TextField()
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
-  author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='articles')
+  author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
   tag_list = models.ManyToManyField(Tag, related_name='articles')
+
+  def save(self, *args, **kwargs):
+    if not self.slug:
+      self.slug = slugify(self.title)
+    super().save(*args, **kwargs)
