@@ -19,6 +19,8 @@ from django.contrib import admin
 from django.urls import path, include
 from articles.views import ArticleViewSet
 from tags.views import TagViewSet
+from comments.views import CommentViewSet
+from users.views import ProfileView
 
 router = DefaultRouter()
 
@@ -28,4 +30,6 @@ router.register(r'articles', ArticleViewSet, basename='article')
 urlpatterns = [
   path('admin/', admin.site.urls),
   path('', include(router.urls)),
+  path('articles/<slug:slug>/comments/', CommentViewSet.as_view({'get': 'list', 'post': 'create'}), name='article-comments'),
+  path('profiles/<str:username>/', ProfileView.as_view(), name='profile-detail'),
 ]
