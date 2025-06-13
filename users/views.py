@@ -1,6 +1,6 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from users.serializers import ProfileSerializer
-from users.serializers import RegisterSerializer
+from users.serializers import RegisterSerializer, LoginSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -29,5 +29,24 @@ class RegisterView(APIView):
       }
       result['user']['token'] = str(refresh.access_token)
 
-      return Response(result, status=201)
-    return Response(serializer.errors, status=400)
+      return Response(result, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LoginView(APIView):
+  """
+  View to handle user login.
+  """
+  def post(self, request):
+    serializer = LoginSerializer(data=request.data['user'])
+    if serializer.is_valid():
+      user = serializer.data
+      refresh = RefreshToken.for_user(serializer.validated_data['user'])
+
+      result = {
+        'success': True,
+        'user': user
+      }
+      result['user']['token'] = str(refresh.access_token)
+
+      return Response(result, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
