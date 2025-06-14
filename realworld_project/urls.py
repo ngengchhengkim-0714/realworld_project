@@ -20,7 +20,7 @@ from django.urls import path, include
 from articles.views import ArticleViewSet
 from tags.views import TagViewSet
 from comments.views import CommentViewSet
-from users.views import ProfileView
+from users.views import ProfileView, RegisterView, LoginView, UserDetailView
 
 router = DefaultRouter()
 
@@ -32,4 +32,7 @@ urlpatterns = [
   path('', include(router.urls)),
   path('articles/<slug:slug>/comments/', CommentViewSet.as_view({'get': 'list', 'post': 'create'}), name='article-comments'),
   path('profiles/<str:username>/', ProfileView.as_view(), name='profile-detail'),
+  path('users/', RegisterView.as_view(), name='register'),
+  path('users/login', LoginView.as_view(), name='login'),
+  path('user/', UserDetailView.as_view(), name='user-detail')
 ]
