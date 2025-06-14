@@ -3,12 +3,25 @@ from django.conf import settings
 from .models import User
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class UserSerializer(serializers.ModelSerializer):
   class Meta:
     model = User
     fields = ['username', 'bio', 'image']
+
+class UserDetailSerializer(serializers.ModelSerializer):
+  token = serializers.SerializerMethodField()
+
+  class Meta:
+    model = User
+    fields = ['username', 'bio', 'image', 'email', 'token']
+    read_only_fields = ['token', 'username']
+
+  def get_token(self, user):
+    refresh = RefreshToken.for_user(user)
+    return str(refresh.access_token)
 
 class ProfileSerializer(serializers.ModelSerializer):
   class Meta:
@@ -29,11 +42,10 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.ModelSerializer):
   email = serializers.EmailField(required=True)
   password = serializers.CharField(required=True, write_only=True)
-  username = serializers.CharField(read_only=True)
 
   class Meta:
     model = User
-    fields = ['email', 'username', 'bio', 'image', 'password']
+    fields = ['email', 'password']
 
   def validate(self, data):
     email = data['email']
@@ -45,3 +57,15 @@ class LoginSerializer(serializers.ModelSerializer):
 
     data['user'] = user
     return data
+
+  def to_representation(self, instance):
+    user = self.validated_data['user']
+    refresh = RefreshToken.for_user(user)
+    token = str(refresh.access_token)
+    return {
+      'email': user.email,
+      'username': user.username,
+      'bio': user.bio,
+      'image': user.image,
+      'token': token
+    }

@@ -1,6 +1,6 @@
 from rest_framework import generics, status
 from users.serializers import ProfileSerializer
-from users.serializers import RegisterSerializer, LoginSerializer, UserSerializer
+from users.serializers import RegisterSerializer, LoginSerializer, UserDetailSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -40,16 +40,7 @@ class LoginView(APIView):
   def post(self, request):
     serializer = LoginSerializer(data=request.data['user'])
     if serializer.is_valid():
-      user = serializer.data
-      refresh = RefreshToken.for_user(serializer.validated_data['user'])
-
-      result = {
-        'success': True,
-        'user': user
-      }
-      result['user']['token'] = str(refresh.access_token)
-
-      return Response(result, status=status.HTTP_200_OK)
+      return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -57,5 +48,13 @@ class UserDetailView(APIView):
   permission_classes = [IsAuthenticated]
 
   def get(self, request):
-    serializer = UserSerializer(request.user)
+    serializer = UserDetailSerializer(request.user)
     return Response({'user': serializer.data})
+
+  def put(self, request):
+    serializer = UserDetailSerializer(request.user, data=request.data['user'], partial=True)
+    if serializer.is_valid():
+      serializer.save()
+      data = {'user': serializer.data}
+      return Response(data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
