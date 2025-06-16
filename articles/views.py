@@ -3,6 +3,10 @@ from .models import Article
 from .serializers import ArticleSerializer
 from django.contrib.auth import get_user_model
 from rest_framework import filters
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
 
 class ArticleViewSet(viewsets.ModelViewSet):
   queryset = Article.objects.all()
@@ -27,3 +31,17 @@ class ArticleViewSet(viewsets.ModelViewSet):
     User = get_user_model()
     user = User.objects.first()
     serializer.save(author=user)
+
+
+  @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+  def feed(self, request):
+    user = request.user
+    offset = int(request.query_params.get('offset', 0))
+    limit = int(request.query_params.get('limit', 10))
+    articles = Article.objects.filter(author__in=user.following.all()).order_by('-created_at')[offset:offset + limit]
+    serializer = self.get_serializer(articles, many=True)
+    return Response({
+      'articles': serializer.data,
+      'articlesCount':
+      len(serializer.data)
+    })
