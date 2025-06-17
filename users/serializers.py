@@ -24,9 +24,17 @@ class UserDetailSerializer(serializers.ModelSerializer):
     return str(refresh.access_token)
 
 class ProfileSerializer(serializers.ModelSerializer):
+  following = serializers.SerializerMethodField()
+
   class Meta:
     model = User
-    fields = ['username', 'bio', 'image']
+    fields = ['username', 'bio', 'image', 'following']
+
+  def get_following(self, obj):
+    request = self.context.get('request')
+    if request and request.user.is_authenticated:
+      return obj.followers.filter(id=request.user.id).exists()
+    return False
 
 class RegisterSerializer(serializers.ModelSerializer):
   email = serializers.EmailField(

@@ -6,13 +6,31 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework import viewsets
 
 User = get_user_model()
 
-class ProfileView(generics.RetrieveAPIView):
+class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
   queryset = User.objects.all()
   serializer_class = ProfileSerializer
   lookup_field = 'username'
+
+  @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+  def follow(self, request, username=None):
+    user = self.get_object()
+    if request.user == user:
+      return Response({'error': 'You cannot follow yourself.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if user.followers.filter(id=request.user.id).exists():
+      user.followers.remove(request.user)
+    else:
+      user.followers.add(request.user)
+
+    serializer = self.get_serializer(user)
+    return Response({
+      'profile': serializer.data,
+    })
 
 class RegisterView(APIView):
   """

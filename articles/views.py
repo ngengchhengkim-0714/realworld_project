@@ -7,6 +7,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
+from django.shortcuts import get_object_or_404
+from rest_framework import status
 
 class ArticleViewSet(viewsets.ModelViewSet):
   queryset = Article.objects.all()
@@ -44,4 +46,18 @@ class ArticleViewSet(viewsets.ModelViewSet):
       'articles': serializer.data,
       'articlesCount':
       len(serializer.data)
+    })
+
+  @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+  def favorite(self, request, slug=None):
+    article = get_object_or_404(Article, slug=slug)
+
+    if article.favorited_by.filter(id=request.user.id).exists():
+      article.favorited_by.remove(request.user)
+    else:
+      article.favorited_by.add(request.user)
+
+    serializer = self.get_serializer(article)
+    return Response({
+      'article': serializer.data,
     })
