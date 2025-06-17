@@ -13,6 +13,7 @@ class Article(models.Model):
   updated_at = models.DateTimeField(auto_now=True)
   author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
   tag_list = models.ManyToManyField(Tag, related_name='articles')
+  favorited_by = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='favorited_articles', blank=True)
 
   def save(self, *args, **kwargs):
     if not self.slug:
