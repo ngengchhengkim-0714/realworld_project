@@ -11,10 +11,11 @@ class ArticleSerializer(serializers.ModelSerializer):
   )
   author = UserSerializer(read_only=True)
   favorited = serializers.SerializerMethodField()
+  favoritesCount = serializers.IntegerField(source='favorited_by.count', read_only=True)
 
   class Meta:
     model = Article
-    fields = ['id', 'title', 'slug', 'description', 'body', 'created_at', 'updated_at', 'favorited', 'author', 'tag_list', 'tags']
+    fields = ['id', 'title', 'slug', 'description', 'body', 'created_at', 'updated_at', 'favorited', 'favoritesCount', 'author', 'tag_list', 'tags']
     read_only_fields = ['slug']
 
   def get_tags(self, obj):

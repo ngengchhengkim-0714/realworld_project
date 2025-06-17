@@ -32,7 +32,7 @@ urlpatterns = [
   path('admin/', admin.site.urls),
   path('', include(router.urls)),
   path('articles/<slug:slug>/comments/', CommentViewSet.as_view({'get': 'list', 'post': 'create'}), name='article-comments'),
-#   path('profiles/<str:username>/', ProfileView.as_view(), name='profile-detail'),
+  path('articles/<slug:slug>/comments/<int:pk>/', CommentViewSet.as_view({'delete': 'destroy'}), name='comment-delete'),
   path('users/', RegisterView.as_view(), name='register'),
   path('users/login', LoginView.as_view(), name='login'),
   path('user/', UserDetailView.as_view(), name='user-detail')

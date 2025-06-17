@@ -50,7 +50,6 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
   @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
   def favorite(self, request, slug=None):
-    print("Request data:==================")
     article = get_object_or_404(Article, slug=slug)
 
     if article.favorited_by.filter(id=request.user.id).exists():
