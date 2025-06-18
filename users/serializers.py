@@ -36,6 +36,11 @@ class ProfileSerializer(serializers.ModelSerializer):
       return obj.followers.filter(id=request.user.id).exists()
     return False
 
+  def to_representation(self, instance):
+    return {
+      'profile': super().to_representation(instance),
+    }
+
 class RegisterSerializer(serializers.ModelSerializer):
   email = serializers.EmailField(
     required=True,
@@ -71,9 +76,11 @@ class LoginSerializer(serializers.ModelSerializer):
     refresh = RefreshToken.for_user(user)
     token = str(refresh.access_token)
     return {
-      'email': user.email,
-      'username': user.username,
-      'bio': user.bio,
-      'image': user.image,
-      'token': token
+      'user': {
+        'email': user.email,
+        'username': user.username,
+        'bio': user.bio,
+        'image': user.image,
+        'token': token
+      },
     }
