@@ -28,9 +28,7 @@ class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
       user.followers.add(request.user)
 
     serializer = self.get_serializer(user)
-    return Response({
-      'profile': serializer.data,
-    })
+    return Response(serializer.data)
 
 class RegisterView(APIView):
   """

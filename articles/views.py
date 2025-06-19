@@ -45,9 +45,9 @@ class ArticleViewSet(viewsets.ModelViewSet):
     return Response({
       'articles': serializer.data,
       'articlesCount':
-      len(serializer.data)
+      len(serializer.data),
+      'version': request.version
     })
-
   @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
   def favorite(self, request, slug=None):
     article = get_object_or_404(Article, slug=slug)
